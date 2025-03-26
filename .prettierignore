@@ -1,0 +1,25 @@
+# General
+node_modules
+
+# Development Data Stores
+/development.db
+/development.db-journal
+/development.db-wal
+/development.db-shm
+/development.backups
+
+# Web and Frontend App
+/packages/app/build
+/packages/app/.svelte-kit
+/packages/app/package
+/packages/app/static/*.css
+/packages/app/static/smui*.css
+
+# Command
+/packages/command/dist
+
+# Server
+/packages/server/dist
+
+# Node Library
+/packages/sylphjs/dist

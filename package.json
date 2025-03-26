@@ -1,0 +1,37 @@
+{
+  "name": "sylphjs-repo",
+  "version": "1.0.0",
+  "description": "A complete logging solution for your production apps.",
+  "type": "module",
+  "author": "Hunter Perrin <hperrin@gmail.com>",
+  "license": "AGPL-3.0-only",
+  "scripts": {
+    "format": "prettier --write --ignore-path .prettierignore --ignore-unknown .",
+    "lint": "prettier --check --ignore-path .prettierignore --ignore-unknown .",
+    "clean": "lerna run clean",
+    "prepare": "husky && npm run lint",
+    "postinstall": "npm run build",
+    "build": "lerna run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sciactive/sylphjs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sciactive/sylphjs/issues"
+  },
+  "homepage": "https://github.com/sciactive/sylphjs#readme",
+  "workspaces": [
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "husky": "^9.1.7",
+    "lerna": "^8.2.1",
+    "lint-staged": "^15.2.11",
+    "prettier": "^3.4.2",
+    "prettier-plugin-svelte": "^3.3.2"
+  }
+}

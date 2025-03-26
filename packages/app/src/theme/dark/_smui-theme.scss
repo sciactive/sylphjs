@@ -1,0 +1,90 @@
+@use 'sass:color';
+
+@use '@material/theme/color-palette';
+
+$background: #000;
+
+@use '@material/theme/index' as theme with (
+  $primary: #358ac1,
+  $secondary: #4946cb,
+  $surface: #022d49,
+  $background: $background,
+  $error: color-palette.$deep-orange-900
+);
+
+$color: if(theme.contrast-tone($background) == 'dark', #000, #fff);
+
+// More dense default scale.
+@use '@material/density/index' as density with (
+  $default-scale: -1
+);
+
+// Use custom fonts.
+@use '@material/typography' with (
+  $font-family: unquote('Verdana, Geneva, sans-serif'),
+  $styles-headline1: (
+    font-family: unquote('Tahoma, sans-serif'),
+    letter-spacing: 0,
+  ),
+  $styles-headline2: (
+    font-family: unquote('Tahoma, sans-serif'),
+    letter-spacing: 0,
+  ),
+  $styles-headline3: (
+    font-family: unquote('Tahoma, sans-serif'),
+    letter-spacing: 0,
+  ),
+  $styles-headline4: (
+    font-family: unquote('Tahoma, sans-serif'),
+    letter-spacing: 0,
+  ),
+  $styles-headline5: (
+    letter-spacing: 0,
+  ),
+  $styles-headline6: (
+    letter-spacing: 0,
+  ),
+  $styles-subtitle1: (
+    letter-spacing: 0,
+  ),
+  $styles-subtitle2: (
+    letter-spacing: 0,
+  ),
+  $styles-body1: (
+    letter-spacing: 0,
+  ),
+  $styles-body2: (
+    letter-spacing: 0,
+  ),
+  $styles-caption: (
+    letter-spacing: 0,
+  ),
+  $styles-button: (
+    letter-spacing: 0,
+  ),
+  $styles-overline: (
+    letter-spacing: 0,
+  )
+);
+
+@use '../site';
+
+html,
+body {
+  background-color: $background;
+  color: $color;
+}
+
+// Be more specific than the _Typography.scss file.
+html code,
+html pre,
+.monospace {
+  font-family: 'Courier New', Courier, monospace;
+}
+
+a {
+  color: color-palette.$blue-200;
+}
+a:visited {
+  color: color-palette.$deep-purple-200;
+}
