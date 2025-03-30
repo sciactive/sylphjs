@@ -70,7 +70,9 @@ function checkJsonData(request: Request, response: Response) {
   if (
     'tags' in request.body &&
     (!Array.isArray(request.body.tags) ||
-      request.body.find((tag: any) => typeof tag !== 'string' || tag === ''))
+      request.body.tags.find(
+        (tag: any) => typeof tag !== 'string' || tag === '',
+      ))
   ) {
     response.status(400);
     response.send('The `tags` property must be an array of strings.');
@@ -85,8 +87,6 @@ const app = express();
 app.use(bodyParser.json({ limit: '25mb' }));
 
 app.post('/log', async (request, response) => {
-  console.log(request.body);
-
   if (!checkJsonData(request, response)) {
     return;
   }
@@ -105,8 +105,6 @@ app.post('/log', async (request, response) => {
   await entry.$saveSkipAC();
 });
 app.post('/state', async (request, response) => {
-  console.log(request.body);
-
   if (!checkJsonData(request, response)) {
     return;
   }

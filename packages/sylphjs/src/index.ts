@@ -1,17 +1,17 @@
 import { SYLPHJS_URL } from './environment.js';
 
 interface BaseData {
-  guid: never;
-  cdate: never;
-  mdate: never;
-  user: never;
-  group: never;
-  acUser: never;
-  acGroup: never;
-  acOther: never;
-  acRead: never;
-  acWrite: never;
-  acFull: never;
+  guid?: never;
+  cdate?: never;
+  mdate?: never;
+  user?: never;
+  group?: never;
+  acUser?: never;
+  acGroup?: never;
+  acOther?: never;
+  acRead?: never;
+  acWrite?: never;
+  acFull?: never;
 
   tags?: string[];
   [k: string]: any;

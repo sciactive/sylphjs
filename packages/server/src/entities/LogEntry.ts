@@ -1,4 +1,10 @@
-import type { EntityData, Nymph, SerializedEntityData } from '@nymphjs/nymph';
+import type {
+  EntityData,
+  Nymph,
+  Options,
+  Selector,
+  SerializedEntityData,
+} from '@nymphjs/nymph';
 import { Entity } from '@nymphjs/nymph';
 import { HttpError } from '@nymphjs/server';
 
@@ -13,8 +19,9 @@ export class LogEntry extends Entity<LogEntryData> {
   static ETYPE = 'logentry';
   static class = 'LogEntry';
 
-  static restEnabled = false;
   static pubSubEnabled = false;
+
+  static clientEnabledStaticMethods = ['getLogs'];
 
   private $savingFromBackend = false;
   private $skipAcWhenSaving = false;
@@ -39,6 +46,23 @@ export class LogEntry extends Entity<LogEntryData> {
 
   public $setNymph(nymph: Nymph) {
     this.$nymph = nymph;
+  }
+
+  static async getLogs(options: Options, ...selectors: Selector[]) {
+    if (!this.nymph.tilmeld?.gatekeeper()) {
+      // Only allow logged in users to query.
+      throw new HttpError('You are not logged in.', 401);
+    }
+
+    return await this.nymph.getEntities(
+      {
+        ...options,
+        class: this.nymph.getEntityClass(LogEntry),
+        skipAc: true,
+        skipCache: true,
+      },
+      ...selectors,
+    );
   }
 
   async $save() {

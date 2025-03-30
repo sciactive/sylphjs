@@ -8,6 +8,7 @@
   "author": "Hunter Perrin <hperrin@gmail.com>",
   "license": "LGPL-3.0-only",
   "scripts": {
+    "dev": "env SYLPHJS_URL='http://localhost:8081' node ./dist/test.js",
     "clean": "test -d dist && rm -r dist || true",
     "build": "tsc",
     "watch": "tsc --watch",

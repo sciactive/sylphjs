@@ -6,7 +6,7 @@
   "author": "Hunter Perrin <hperrin@gmail.com>",
   "license": "AGPL-3.0-only",
   "scripts": {
-    "dev": "env SQLITE_FILENAME=\"../../development.db\" JWT_SECRET=\"15186664-f9f3-4ab7-946c-a01aea566bde\" WEB_PUSH_VAPID_PUBLIC_KEY=\"BA8TNZlcDdZYszUXCVvmbOiTMZrlT-lc6V3hhtVnDdu72rH9oA-NqiVFRqrf2GjfVfzCu4hmrI_G98G_fSOft0M\" WEB_PUSH_VAPID_PRIVATE_KEY=\"d2p0F8dy1So5nzXwRYOLMnfpuZb53duF_vfJwsNsI4Q\" vite dev",
+    "dev": "env SERVER_PORT=8081 SQLITE_FILENAME=\"../../development.db\" JWT_SECRET=\"15186664-f9f3-4ab7-946c-a01aea566bde\" WEB_PUSH_VAPID_PUBLIC_KEY=\"BA8TNZlcDdZYszUXCVvmbOiTMZrlT-lc6V3hhtVnDdu72rH9oA-NqiVFRqrf2GjfVfzCu4hmrI_G98G_fSOft0M\" WEB_PUSH_VAPID_PRIVATE_KEY=\"d2p0F8dy1So5nzXwRYOLMnfpuZb53duF_vfJwsNsI4Q\" vite dev",
     "dev-env": "env-cmd -f ../../.env vite dev",
     "build": "vite build",
     "preview": "vite preview",
