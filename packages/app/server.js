@@ -31,7 +31,17 @@ if (process.env.CERT) {
   );
 }
 
-app.use(compression());
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.headers['Content-Type'] === 'text/event-stream') {
+        return false;
+      }
+
+      return compression.filter(req, res);
+    },
+  }),
+);
 
 app.use('/rest', corsMiddleware);
 app.use('/rest', restMiddleware);

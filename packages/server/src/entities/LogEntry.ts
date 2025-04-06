@@ -7,6 +7,9 @@ import type {
 } from '@nymphjs/nymph';
 import { Entity } from '@nymphjs/nymph';
 import { HttpError } from '@nymphjs/server';
+import Formula from 'fparser';
+import * as lodash from 'lodash-es';
+import strtotime from 'locutus/php/datetime/strtotime.js';
 
 export type LogEntryData = {
   acUser: number;
@@ -21,7 +24,11 @@ export class LogEntry extends Entity<LogEntryData> {
 
   static pubSubEnabled = false;
 
-  static clientEnabledStaticMethods = ['getLogs'];
+  static clientEnabledStaticMethods = [
+    'getLogs',
+    'queryLogsTime',
+    'queryLogsChunks',
+  ];
 
   private $savingFromBackend = false;
   private $skipAcWhenSaving = false;
@@ -63,6 +70,132 @@ export class LogEntry extends Entity<LogEntryData> {
       },
       ...selectors,
     );
+  }
+
+  static async *queryLogsTime({
+    query,
+    formula,
+    begin,
+    end,
+    step,
+  }: {
+    query: [Options, ...Selector[]];
+    formula: string;
+    begin: number | string;
+    end: number | string;
+    step: number;
+  }): AsyncIterator<
+    { begin: number; end: number; value: number },
+    void,
+    boolean
+  > {
+    if (!this.nymph.tilmeld?.gatekeeper()) {
+      // Only allow logged in users.
+      throw new HttpError('You are not logged in.', 401);
+    }
+
+    const beginDate =
+      typeof begin === 'string' ? strtotime(begin) * 1000 : begin;
+    const endDate = typeof end === 'string' ? strtotime(end) * 1000 : end;
+
+    let aborted = false;
+    let cdate = beginDate;
+    let cdateEnd = beginDate + step * 1000;
+
+    const fObj = new Formula(formula, {});
+    fObj.lo = lodash;
+
+    while (!aborted) {
+      const [options, ...selectors] = query;
+      const entries = await this.nymph.getEntities(
+        {
+          ...options,
+          class: this.nymph.getEntityClass(LogEntry),
+          skipAc: true,
+          skipCache: true,
+        },
+        ...selectors,
+        { type: '&', gte: ['cdate', cdate], lt: ['cdate', cdateEnd] },
+      );
+
+      const value = {
+        begin: cdate,
+        end: cdateEnd,
+        value: fObj.evaluate({
+          // @ts-ignore
+          entries,
+          getEntries: () => entries,
+        }) as number,
+      };
+
+      aborted = yield value;
+      // Wait for an event loop each iteration, to allow data to flush.
+      await new Promise((resolve) => setImmediate(resolve));
+
+      cdate += step * 1000;
+      cdateEnd += step * 1000;
+      if (cdate >= endDate) {
+        break;
+      }
+      if (cdateEnd > endDate) {
+        cdateEnd = endDate;
+      }
+    }
+  }
+
+  static async *queryLogsChunks({
+    query,
+    formula,
+    chunkLength,
+  }: {
+    query: [Options, ...Selector[]];
+    formula: string;
+    chunkLength: number;
+  }): AsyncIterator<{ chunk: number; value: number }, void, boolean> {
+    if (!this.nymph.tilmeld?.gatekeeper()) {
+      // Only allow logged in users.
+      throw new HttpError('You are not logged in.', 401);
+    }
+
+    let aborted = false;
+    let offset = 0;
+
+    const fObj = new Formula(formula, {});
+    fObj.lo = lodash;
+
+    while (!aborted) {
+      const [options, ...selectors] = query;
+      const entries = await this.nymph.getEntities(
+        {
+          ...options,
+          class: this.nymph.getEntityClass(LogEntry),
+          offset,
+          limit: chunkLength,
+          skipAc: true,
+          skipCache: true,
+        },
+        ...selectors,
+      );
+
+      if (entries.length === 0) {
+        break;
+      }
+
+      const value = {
+        chunk: offset / chunkLength,
+        value: fObj.evaluate({
+          // @ts-ignore
+          entries,
+          getEntries: () => entries,
+        }) as number,
+      };
+
+      aborted = yield value;
+      // Wait for an event loop each iteration, to allow data to flush.
+      await new Promise((resolve) => setImmediate(resolve));
+
+      offset += chunkLength;
+    }
   }
 
   async $save() {
