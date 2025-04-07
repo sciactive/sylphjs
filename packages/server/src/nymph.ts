@@ -204,7 +204,13 @@ export function getNymphInstance(): NymphInstance {
       allowRegistration: false,
     });
 
-    nymph = new Nymph({}, driver, tilmeld);
+    nymph = new Nymph(
+      {
+        cache: false,
+      },
+      driver,
+      tilmeld,
+    );
     PubSub.initPublisher(pubSubConfig, nymph);
 
     Dashboard = nymph.addEntityClass(DashboardClass);

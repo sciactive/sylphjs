@@ -111,6 +111,7 @@ export class LogEntry extends Entity<LogEntryData> {
         {
           ...options,
           class: this.nymph.getEntityClass(LogEntry),
+          return: 'object',
           skipAc: true,
           skipCache: true,
         },
@@ -129,8 +130,6 @@ export class LogEntry extends Entity<LogEntryData> {
       };
 
       aborted = yield value;
-      // Wait for an event loop each iteration, to allow data to flush.
-      await new Promise((resolve) => setImmediate(resolve));
 
       cdate += step * 1000;
       cdateEnd += step * 1000;
@@ -169,6 +168,7 @@ export class LogEntry extends Entity<LogEntryData> {
         {
           ...options,
           class: this.nymph.getEntityClass(LogEntry),
+          return: 'object',
           offset,
           limit: chunkLength,
           skipAc: true,
@@ -191,8 +191,6 @@ export class LogEntry extends Entity<LogEntryData> {
       };
 
       aborted = yield value;
-      // Wait for an event loop each iteration, to allow data to flush.
-      await new Promise((resolve) => setImmediate(resolve));
 
       offset += chunkLength;
     }
