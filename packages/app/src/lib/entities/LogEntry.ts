@@ -9,6 +9,20 @@ export type LogEntryData = {
   [k: string]: any;
 };
 
+export type LogsTimeQuery = {
+  query: [Options, ...Selector[]];
+  formula: string;
+  begin: number | string;
+  end: number | string;
+  step: number;
+};
+
+export type LogsChunksQuery = {
+  query: [Options, ...Selector[]];
+  formula: string;
+  chunkLength: number;
+};
+
 export class LogEntry extends Entity<LogEntryData> {
   // The name of the server class
   public static class = 'LogEntry';
@@ -24,13 +38,7 @@ export class LogEntry extends Entity<LogEntryData> {
     return await this.serverCallStatic('getLogs', [options, ...selectors]);
   }
 
-  static async queryLogsTime(options: {
-    query: [Options, ...Selector[]];
-    formula: string;
-    begin: number | string;
-    end: number | string;
-    step: number;
-  }): Promise<
+  static async queryLogsTime(options: LogsTimeQuery): Promise<
     AbortableAsyncIterator<{
       begin: number;
       end: number;
@@ -40,11 +48,7 @@ export class LogEntry extends Entity<LogEntryData> {
     return await this.serverCallStaticIterator('queryLogsTime', [options]);
   }
 
-  static async queryLogsChunks(options: {
-    query: [Options, ...Selector[]];
-    formula: string;
-    chunkLength: number;
-  }): Promise<
+  static async queryLogsChunks(options: LogsChunksQuery): Promise<
     AbortableAsyncIterator<{
       chunk: number;
       value: number;

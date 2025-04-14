@@ -1,11 +1,20 @@
 <div style="display: flex; flex-direction: column; width: 100%; gap: 1em;">
   <div>
+    <Textfield
+      label="Label"
+      type="text"
+      bind:value={query.label}
+      style="width: 100%"
+    />
+  </div>
+
+  <div>
     <div style="display: flex; align-items: center; gap: 1em;">
       <span>Query Type:</span>
       <SegmentedButton
         segments={['aggregate', 'select']}
         singleSelect
-        bind:selected={queryType}
+        bind:selected={query.queryType}
       >
         {#snippet segment(segment: 'aggregate' | 'select')}
           <!-- Note: the `segment` property is required! -->
@@ -16,9 +25,9 @@
       </SegmentedButton>
     </div>
     <p class="mdc-typography--caption">
-      {#if queryType === 'aggregate'}
+      {#if query.queryType === 'aggregate'}
         Aggregate entries into a value that can be displayed on charts.
-      {:else if queryType === 'select'}
+      {:else if query.queryType === 'select'}
         Select entries to be viewed individually.
       {/if}
     </p>
@@ -28,37 +37,32 @@
     <Textfield
       label="Query"
       type="text"
-      bind:value={query}
+      bind:value={query.query}
       style="width: 100%"
-      onkeydown={(event) => {
-        if (event.key === 'Enter') {
-          onsubmit();
-        }
-      }}
     />
   </div>
 
-  {#if queryType === 'aggregate'}
+  {#if query.queryType === 'aggregate'}
     <div>
-      <Select bind:value={aggregationType} label="Aggregation Type">
+      <Select bind:value={query.aggregationType} label="Aggregation Type">
         {#each ['absolute-time', 'relative-time', 'chunks'] as curType}
           <Option value={curType}>{capitalize(curType)}</Option>
         {/each}
         {#snippet helperText()}
-          {#if aggregationType === 'absolute-time'}
+          {#if query.aggregationType === 'absolute-time'}
             Aggregate entries from a specific window of time in smaller time
             spans.
-          {:else if aggregationType === 'relative-time'}
+          {:else if query.aggregationType === 'relative-time'}
             Aggregate entries from a relative window of time in smaller time
             spans.
-          {:else if aggregationType === 'chunks'}
+          {:else if query.aggregationType === 'chunks'}
             Aggregate entries in chunks of a given length.
           {/if}
         {/snippet}
       </Select>
     </div>
 
-    {#if aggregationType === 'absolute-time'}
+    {#if query.aggregationType === 'absolute-time'}
       <div
         style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap;"
       >
@@ -96,7 +100,7 @@
         </div>
         <div>
           <Textfield
-            bind:value={aggregationTimeStep}
+            bind:value={query.aggregationTimeStep}
             label="Step"
             type="number"
             input$min={1}
@@ -108,13 +112,13 @@
           </Textfield>
         </div>
       </div>
-    {:else if aggregationType === 'relative-time'}
+    {:else if query.aggregationType === 'relative-time'}
       <div
         style="display: flex; flex-direction: row; gap: 1em; flex-wrap: wrap;"
       >
         <div>
           <Textfield
-            bind:value={aggregationRelativeTimeStart}
+            bind:value={query.aggregationRelativeTimeStart}
             label="Start"
             type="text"
             required
@@ -129,7 +133,7 @@
         </div>
         <div>
           <Textfield
-            bind:value={aggregationRelativeTimeEnd}
+            bind:value={query.aggregationRelativeTimeEnd}
             label="End"
             type="text"
             required
@@ -144,7 +148,7 @@
         </div>
         <div>
           <Textfield
-            bind:value={aggregationTimeStep}
+            bind:value={query.aggregationTimeStep}
             label="Step"
             type="number"
             input$min={1}
@@ -156,10 +160,10 @@
           </Textfield>
         </div>
       </div>
-    {:else if aggregationType === 'chunks'}
+    {:else if query.aggregationType === 'chunks'}
       <div>
         <Textfield
-          bind:value={aggregationChunksChunkLength}
+          bind:value={query.aggregationChunksChunkLength}
           label="Chunk Length"
           type="number"
           input$min={1}
@@ -179,13 +183,8 @@
       <Textfield
         label="Aggregation Formula"
         type="text"
-        bind:value={aggregationFormula}
+        bind:value={query.aggregationFormula}
         style="width: 100%"
-        onkeydown={(event) => {
-          if (event.key === 'Enter') {
-            onsubmit();
-          }
-        }}
       />
     </div>
   {/if}
@@ -199,66 +198,152 @@
   import HelperText from '@smui/textfield/helper-text';
   import { Label } from '@smui/common';
   import strtotime from 'locutus/php/datetime/strtotime.js';
+  import type { LogQuery } from '$lib/LogQuery';
   import type { SessionStuff } from '$lib/nymph';
 
   let {
-    queryType = $bindable(),
     query = $bindable(),
-    aggregationType = $bindable(),
-    aggregationAbsoluteTimeStart = $bindable(),
-    aggregationAbsoluteTimeEnd = $bindable(),
-    aggregationRelativeTimeStart = $bindable(),
-    aggregationRelativeTimeEnd = $bindable(),
-    aggregationTimeStep = $bindable(),
-    aggregationChunksChunkLength = $bindable(),
-    aggregationFormula = $bindable(),
-    onsubmit = () => {},
     stuff,
   }: {
-    queryType: 'aggregate' | 'select';
-    query: string;
-    aggregationType: 'absolute-time' | 'relative-time' | 'chunks';
-    aggregationAbsoluteTimeStart: number;
-    aggregationAbsoluteTimeEnd: number;
-    aggregationRelativeTimeStart: string;
-    aggregationRelativeTimeEnd: string;
-    aggregationTimeStep: number;
-    aggregationChunksChunkLength: number;
-    aggregationFormula: string;
-    onsubmit?: () => void;
+    query: LogQuery;
     stuff: SessionStuff;
   } = $props();
 
+  $effect.pre(() => {
+    // Delete unnecessary keys and fill in newly needed ones.
+
+    if (query.queryType === 'select') {
+      // @ts-ignore
+      delete query.aggregationType;
+      // @ts-ignore
+      delete query.aggregationAbsoluteTimeStart;
+      // @ts-ignore
+      delete query.aggregationAbsoluteTimeEnd;
+      // @ts-ignore
+      delete query.aggregationRelativeTimeStart;
+      // @ts-ignore
+      delete query.aggregationRelativeTimeEnd;
+      // @ts-ignore
+      delete query.aggregationTimeStep;
+      // @ts-ignore
+      delete query.aggregationChunksChunkLength;
+      // @ts-ignore
+      delete query.aggregationFormula;
+    } else if (query.queryType === 'aggregate') {
+      if (!('aggregationFormula' in (query as LogQuery))) {
+        query.aggregationFormula = '[entries.length]';
+      }
+      if (query.aggregationType === 'absolute-time') {
+        // @ts-ignore
+        delete (query as LogQuery).aggregationRelativeTimeStart;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationRelativeTimeEnd;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationChunksChunkLength;
+        if (!('aggregationAbsoluteTimeStart' in (query as LogQuery))) {
+          query.aggregationAbsoluteTimeStart = (() => {
+            const date = new Date();
+            date.setHours(0, 0, 0);
+            return date.getTime();
+          })();
+        }
+        if (!('aggregationAbsoluteTimeEnd' in (query as LogQuery))) {
+          query.aggregationAbsoluteTimeEnd = (() => {
+            const date = new Date(new Date().getTime() + 1000 * 60 * 60 * 24);
+            date.setHours(0, 0, 0);
+            return date.getTime();
+          })();
+        }
+        if (!('aggregationTimeStep' in (query as LogQuery))) {
+          query.aggregationTimeStep = 60 * 5;
+        }
+      } else if (query.aggregationType === 'relative-time') {
+        // @ts-ignore
+        delete (query as LogQuery).aggregationAbsoluteTimeStart;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationAbsoluteTimeEnd;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationChunksChunkLength;
+        if (!('aggregationRelativeTimeStart' in (query as LogQuery))) {
+          query.aggregationRelativeTimeStart = '-1 day';
+        }
+        if (!('aggregationRelativeTimeEnd' in (query as LogQuery))) {
+          query.aggregationRelativeTimeEnd = 'now';
+        }
+        if (!('aggregationTimeStep' in (query as LogQuery))) {
+          query.aggregationTimeStep = 60 * 5;
+        }
+      } else if (query.aggregationType === 'chunks') {
+        // @ts-ignore
+        delete (query as LogQuery).aggregationAbsoluteTimeStart;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationAbsoluteTimeEnd;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationRelativeTimeStart;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationRelativeTimeEnd;
+        // @ts-ignore
+        delete (query as LogQuery).aggregationTimeStep;
+        if (!('aggregationChunksChunkLength' in (query as LogQuery))) {
+          query.aggregationChunksChunkLength = 10;
+        }
+      }
+    }
+  });
+
   let aggregationAbsoluteTimeStartValue = $state(
-    dateToDateTimeLocalString(new Date(aggregationAbsoluteTimeStart)),
+    query.queryType === 'aggregate' && query.aggregationType === 'absolute-time'
+      ? dateToDateTimeLocalString(new Date(query.aggregationAbsoluteTimeStart))
+      : '',
   );
   $effect(() => {
-    aggregationAbsoluteTimeStart = new Date(
-      aggregationAbsoluteTimeStartValue,
-    ).getTime();
+    if (
+      query.queryType === 'aggregate' &&
+      query.aggregationType === 'absolute-time'
+    ) {
+      query.aggregationAbsoluteTimeStart = new Date(
+        aggregationAbsoluteTimeStartValue,
+      ).getTime();
+    }
   });
   let aggregationAbsoluteTimeEndValue = $state(
-    dateToDateTimeLocalString(new Date(aggregationAbsoluteTimeEnd)),
+    query.queryType === 'aggregate' && query.aggregationType === 'absolute-time'
+      ? dateToDateTimeLocalString(new Date(query.aggregationAbsoluteTimeEnd))
+      : 0,
   );
   $effect(() => {
-    aggregationAbsoluteTimeEnd = new Date(
-      aggregationAbsoluteTimeEndValue,
-    ).getTime();
+    if (
+      query.queryType === 'aggregate' &&
+      query.aggregationType === 'absolute-time'
+    ) {
+      query.aggregationAbsoluteTimeEnd = new Date(
+        aggregationAbsoluteTimeEndValue,
+      ).getTime();
+    }
   });
 
   let aggregateRelativeTimeStartValue = $state(
-    strtotime(aggregationRelativeTimeStart),
+    query.queryType === 'aggregate' && query.aggregationType === 'relative-time'
+      ? strtotime(query.aggregationRelativeTimeStart)
+      : 0,
   );
   let aggregateRelativeTimeEndValue = $state(
-    strtotime(aggregationRelativeTimeEnd),
+    query.queryType === 'aggregate' && query.aggregationType === 'relative-time'
+      ? strtotime(query.aggregationRelativeTimeEnd)
+      : 0,
   );
   onMount(() => {
     const interval = setInterval(() => {
-      if (aggregationType === 'relative-time') {
+      if (
+        query.queryType === 'aggregate' &&
+        query.aggregationType === 'relative-time'
+      ) {
         aggregateRelativeTimeStartValue = strtotime(
-          aggregationRelativeTimeStart,
+          query.aggregationRelativeTimeStart,
         );
-        aggregateRelativeTimeEndValue = strtotime(aggregationRelativeTimeEnd);
+        aggregateRelativeTimeEndValue = strtotime(
+          query.aggregationRelativeTimeEnd,
+        );
       }
     }, 1000);
     return () => {

@@ -3,8 +3,6 @@ import { Entity } from '@nymphjs/nymph';
 import { HttpError } from '@nymphjs/server';
 
 export type StateObjectData = {
-  acUser: number;
-  acGroup: number;
   acOther: number;
   id: string;
   [k: string]: any;
@@ -57,9 +55,14 @@ export class StateObject extends Entity<StateObjectData> {
     }
     this.$savingFromBackend = false;
 
-    this.$data.acUser = 0;
-    this.$data.acGroup = 0;
+    delete this.$data.user;
+    delete this.$data.group;
+    delete this.$data.acUser;
+    delete this.$data.acGroup;
     this.$data.acOther = 0;
+    delete this.$data.acRead;
+    delete this.$data.acWrite;
+    delete this.$data.acFull;
 
     if (
       this.$data.id == null ||

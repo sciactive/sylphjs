@@ -12,10 +12,22 @@ import * as lodash from 'lodash-es';
 import strtotime from 'locutus/php/datetime/strtotime.js';
 
 export type LogEntryData = {
-  acUser: number;
-  acGroup: number;
   acOther: number;
   [k: string]: any;
+};
+
+export type LogsTimeQuery = {
+  query: [Options, ...Selector[]];
+  formula: string;
+  begin: number | string;
+  end: number | string;
+  step: number;
+};
+
+export type LogsChunksQuery = {
+  query: [Options, ...Selector[]];
+  formula: string;
+  chunkLength: number;
 };
 
 export class LogEntry extends Entity<LogEntryData> {
@@ -78,13 +90,7 @@ export class LogEntry extends Entity<LogEntryData> {
     begin,
     end,
     step,
-  }: {
-    query: [Options, ...Selector[]];
-    formula: string;
-    begin: number | string;
-    end: number | string;
-    step: number;
-  }): AsyncIterator<
+  }: LogsTimeQuery): AsyncIterator<
     { begin: number; end: number; value: number },
     void,
     boolean
@@ -146,11 +152,11 @@ export class LogEntry extends Entity<LogEntryData> {
     query,
     formula,
     chunkLength,
-  }: {
-    query: [Options, ...Selector[]];
-    formula: string;
-    chunkLength: number;
-  }): AsyncIterator<{ chunk: number; value: number }, void, boolean> {
+  }: LogsChunksQuery): AsyncIterator<
+    { chunk: number; value: number },
+    void,
+    boolean
+  > {
     if (!this.nymph.tilmeld?.gatekeeper()) {
       // Only allow logged in users.
       throw new HttpError('You are not logged in.', 401);
@@ -202,9 +208,14 @@ export class LogEntry extends Entity<LogEntryData> {
     }
     this.$savingFromBackend = false;
 
-    this.$data.acUser = 0;
-    this.$data.acGroup = 0;
+    delete this.$data.user;
+    delete this.$data.group;
+    delete this.$data.acUser;
+    delete this.$data.acGroup;
     this.$data.acOther = 0;
+    delete this.$data.acRead;
+    delete this.$data.acWrite;
+    delete this.$data.acFull;
 
     return await super.$save();
   }
