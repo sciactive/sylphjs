@@ -81,6 +81,12 @@ You can create and manage dashboards in the Sylph.js app. Dashboards can display
 - **Available through Sylph.js' Progressive Web App** - Supports push notifications on **iOS, Android, and desktop devices**.
 - **User-defined alert rules** - Alerts are triggered based on query conditions using the same filtering options as log searches.
 
+# Human Authorship
+
+This project adheres to the [SciActive Human Contribution Policy](HUMAN-CONTRIBUTION-POLICY.md).
+
+[![Seal of Human Authorship](https://sciactive.com/wp-content/uploads/2026/03/Seal-of-Human-Authorship-300.png)](https://sciactive.com/human-contribution-policy/)
+
 # Copyright
 
 Copyright (C) SciActive Inc - All Rights Reserved
