@@ -89,7 +89,7 @@ This project adheres to the [SciActive Human Contribution Policy](HUMAN-CONTRIBU
 
 # Copyright
 
-Copyright (C) SciActive Inc - All Rights Reserved
+Sylph.js Copyright (C) 2026 SciActive Inc
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, version 3 of the License.
 
